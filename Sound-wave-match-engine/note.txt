@@ -1,0 +1,51 @@
+Phase 0: 
+Imagine we are sitting in a cafe, and hear a song, if we record the 5 seconds of it, the system must give us what the song is. 
+So naive approach would be to search the whole database matching each and every beat, that would be very much expensive. 
+
+when we search and identify the people we dont really store all the information, rather one fingerprint / DNA of a person which is unique. similarly this engine stores the characteristics of songs. Important characteristics of the song, hence its fingerprint is stored in the database. 
+
+So our system is nothing but an audio identification system which converts songs into compact fingerprints and uses fast retrieval techniques with index based methods to retrieve the name and details of the song. 
+
+ok basically the songs in the database and the queries both are stored in the database as fingerprints in an indexed structure and retrieves them quickly whoever is matching. 
+
+
+WAV -> waveform Audio file -> contains raw audio. 
+MP3 -> MPEG-1 audio layer 3 -> it reduces and compresses the file and only stores that information which is perceivable by humans in an encoded format. 
+
+Phase 1: 
+Ok now in this phase, what we do is preprocessing, here the audio file are usually WAV / MP3 files, they consist of raw stereo audio to mono audio first, as we dont need any spatial information about the song being played but the song itself. less variables less memory. and still our task is fulfilled. 
+
+also we do the preprocessing so that all the audio files we receive are converted to numpy arrays, so that we can process them further to hash and perform fast-indexed searching. 
+
+2. sampling rate. what is sound, it is nothing but a compression and elongation, or longitudinal wave which is a function of pressure. now we can perceive it but computers cant. so they store it as electrical signal, high noise high sound.. but soundwave is continuous, the computer or more specifically the microphone stores it as  a sample / screenshot of the wave, that is called a sample. the number of screenshots of the wave per second is the sampling rate, normally the computer sampling rate is 44.1 KHZ. so yes thats the reason we hear everything. more samples -> slower pipeline. 
+
+Now we need to reduce the sample, how do we make sure we capture the entire information . this is where nyquiest theorem comes in, it says that to capture. 
+
+so sampling rate >= 2f. here f is the frequency of sound. , now when we convert the file from 44.1KHz to 22.05 Khz, we cant really remove the alternate features.. proper resampling must be done, like the frequency isnt uniform, it contains both ups and downs. 
+
+Now the last step of phase 1 is normalization and it is simply to normalize the sounds of all types of loudness. 
+
+Faced an authentication and compatibility issue with the linux subsystem. 
+
+Phase -2 -> FFT -> Fast Fourier Transform: 
+Right now the waveform we obtained from phase 1, tells us what is the shape of our wave. At some point in time, it tells us what is the amplitude of the wave. But it doesnt give the following information which specific for some audio track: 
+1. Frequency beat (it doesnt tell us about which frequency is begin peaked at that moment. ) -> more specifically which frequencies are active at that moment in time. 
+2. Pitch 
+3. etc.
+
+So we need these quantities. that is where FFT comes in. This is one of the most important components of DSP (Digital Signal Processing)
+If we read theory we find out that fourier transform is nothing but combination of waves (typically sin waves) with varying amplitudes. hence if we apply fast fourier transform we get the components we need. and again. that gives us one while fourier transform which tells if 440Hz exists, 880 Hz exists, etc. but it doesnt tell us at what time did the 440 hz occured. so for that we need multiple fourier transform. 
+
+Here comees SFFT -> short Fourier Transform. Instead of analyzing the whole song as a whole, we pick up tiny windows and analyze them. 
+(analogy : Novel -> form 500 pages summary -> misses detail, summary for eveyr 50 pages, misses less details. )
+
+Also inorder to not miss a single detail we perform SFFT on overlapping windows. Before applying FFT directly to the window, we multiply something called Hamming window, it apparently reduces Spectral Leakage. 
+
+The window size we take about is 4096.. which is 4096 / 22.05k = 0.186 sec. each time we look ath this amount of audio. 
+
+the final values which we obtain are stacked over eachotehr to create something called a Spectrogram, it contains the following info: 
+1 sample : 50hz yes, 100 hz no.. 
+2 sample: ...
+etc. 
+
+in the spectrogram, the intensity or loudness is showed with a color. 
