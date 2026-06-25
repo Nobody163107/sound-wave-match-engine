@@ -49,3 +49,22 @@ the final values which we obtain are stacked over eachotehr to create something 
 etc. 
 
 in the spectrogram, the intensity or loudness is showed with a color. 
+
+Now there is something called time-frequency uncertainty tradeoff. that is if we take bigger windows we will be able to distinguish. 
+
+Again the overlapping frequencies we have already discussed it is to not to miss beat. 
+
+Now there is very imp nuance ehre, when we model the waves windows, we are doing something wrong, that is we are cutting off the signals at places. so that produces a discontinuity and to transform that discontinuity or (warp), FFT introduces more frequency components which are false, this phenomenon is called spectral leakage. to handle this we use something called a hamming window. 
+
+so instead of multiplying the waveform with a rectangular window, we multiply it with a bell shaped curve so as to reduce the discontinuity at the edge, yes that reduces teh edge info but as overlapping is present, thats okay, we dont lose much information. 
+
+FFT assumes the analyzed segment repeats periodically. If the segment has abrupt edges, the repetition introduces discontinuities that create spectral leakage. A Hamming window gradually tapers the signal toward zero at both ends, making the repeated signal smoother and reducing leakage
+
+now we obtain the windows and bins. then map them to the corresponding frequency, mostly this process is completely automised with scipy library, but we have to transform the amplitude to loudness as the higher amplitudes like 1000 may overwhelm smlaler ones like 100 which causes issue in hashing, so keeping the phase 3 in mind, we do this transformation. 
+
+Phase -3 -> Dimensionality Reduction: 
+So at the end of phase 2 we obtained a giant spectrogram matrix which contained (2049 x 200) values 2049 because negative frequencies are just the mirror images of the positive ones hence they are not actually stored. If we store the same spectrogram for thousands of songs our databse would definetly explode. so hence we reduce its size. 
+
+what we do is we take 2d -max pooling over the grid, the filter would be of size (20 X 20). this would highlight the maximum values and create something called a Constellation Map which is basically our fingerprint for the song. we are able to do this as most of the heatmap shows ambient noise and background music, the absolute differentiating beats are less in number. \
+
+the peaks we get are stored in an array of tuples (f1, t1) showing their peaks. 
