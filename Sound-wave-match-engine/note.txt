@@ -12,7 +12,7 @@ ok basically the songs in the database and the queries both are stored in the da
 WAV -> waveform Audio file -> contains raw audio. 
 MP3 -> MPEG-1 audio layer 3 -> it reduces and compresses the file and only stores that information which is perceivable by humans in an encoded format. 
 
-Phase 1: 
+ℙ𝕙𝕒𝕤𝕖 𝟙: 
 Ok now in this phase, what we do is preprocessing, here the audio file are usually WAV / MP3 files, they consist of raw stereo audio to mono audio first, as we dont need any spatial information about the song being played but the song itself. less variables less memory. and still our task is fulfilled. 
 
 also we do the preprocessing so that all the audio files we receive are converted to numpy arrays, so that we can process them further to hash and perform fast-indexed searching. 
@@ -27,7 +27,7 @@ Now the last step of phase 1 is normalization and it is simply to normalize the 
 
 Faced an authentication and compatibility issue with the linux subsystem. 
 
-Phase -2 -> FFT -> Fast Fourier Transform: 
+𝗣͟𝗵͟𝗮͟𝘀͟𝗲 -͟𝟮 -͟> 𝗙͟𝗙͟𝗧 -͟> 𝗙͟𝗮͟𝘀͟𝘁 𝗙͟𝗼͟𝘂͟𝗿͟𝗶͟𝗲͟𝗿 𝗧͟𝗿͟𝗮͟𝗻͟𝘀͟𝗳͟𝗼͟𝗿͟𝗺͟: 
 Right now the waveform we obtained from phase 1, tells us what is the shape of our wave. At some point in time, it tells us what is the amplitude of the wave. But it doesnt give the following information which specific for some audio track: 
 1. Frequency beat (it doesnt tell us about which frequency is begin peaked at that moment. ) -> more specifically which frequencies are active at that moment in time. 
 2. Pitch 
@@ -50,7 +50,7 @@ etc.
 
 in the spectrogram, the intensity or loudness is showed with a color. 
 
-Now there is something called time-frequency uncertainty tradeoff. that is if we take bigger windows we will be able to distinguish. 
+Now there is something called time-frequency uncertainty tradeoff. that is if we take bigger windows we will be able to distinguish frequencies better. 
 
 Again the overlapping frequencies we have already discussed it is to not to miss beat. 
 
@@ -60,11 +60,43 @@ so instead of multiplying the waveform with a rectangular window, we multiply it
 
 FFT assumes the analyzed segment repeats periodically. If the segment has abrupt edges, the repetition introduces discontinuities that create spectral leakage. A Hamming window gradually tapers the signal toward zero at both ends, making the repeated signal smoother and reducing leakage
 
-now we obtain the windows and bins. then map them to the corresponding frequency, mostly this process is completely automised with scipy library, but we have to transform the amplitude to loudness as the higher amplitudes like 1000 may overwhelm smlaler ones like 100 which causes issue in hashing, so keeping the phase 3 in mind, we do this transformation. 
+now we obtain the windows and bins. then map them to the corresponding frequency, mostly this process is completely automised with scipy library, but we have to transform the amplitude to loudness as the higher amplitudes like 1000 may overwhelm smlaler ones like 100 which causes issue in hashing, so keeping the phase 3 in mind, we do this transformation.
 
-Phase -3 -> Dimensionality Reduction: 
+The spectogram matrix basically stores the loudness values of all the frequencies present.. got it 
+
+ℙ𝕙𝕒𝕤𝕖 -𝟛 -> 𝔻𝕚𝕞𝕖𝕟𝕤𝕚𝕠𝕟𝕒𝕝𝕚𝕥𝕪 ℝ𝕖𝕕𝕦𝕔𝕥𝕚𝕠𝕟: 
 So at the end of phase 2 we obtained a giant spectrogram matrix which contained (2049 x 200) values 2049 because negative frequencies are just the mirror images of the positive ones hence they are not actually stored. If we store the same spectrogram for thousands of songs our databse would definetly explode. so hence we reduce its size. 
 
 what we do is we take 2d -max pooling over the grid, the filter would be of size (20 X 20). this would highlight the maximum values and create something called a Constellation Map which is basically our fingerprint for the song. we are able to do this as most of the heatmap shows ambient noise and background music, the absolute differentiating beats are less in number. \
 
 the peaks we get are stored in an array of tuples (f1, t1) showing their peaks. 
+
+So we store the peaks a list of tuples.. 
+
+Ok in scipy implementation, we iterate a diamon around the matrix, as some values are missed, scipy as morphological filters to handle the border cases like reflect, constant, neareest value, etc. 
+
+here the neigbours are connected by manhattan distane. then we get the diamond, now after doing that we slide it and create a matrix called local max which is boolean, the center is changed to maxm and the boolean array checks if the value is equal tot eh maximum value in the neigbourhoodl. 
+
+then we apply the filter for quiet sounds and create one more boolean matrix.. whcih tells about the quiter noises. 
+Binary erosion relaxes the background mask near its boundaries, giving peaks close to the border between silence and signal a chance to survive instead of being discarded as background
+
+we applythis binary erosion to give a chance to the border of teh background to survive the local maxima filter, it is just a cleanup process.. and not that importnatn. 
+"Only classify an area as 'the background' if it is deeply, solidly quiet across the entire size of our diamond filter. If it's just a sketchy, noisy edge pixel near a sound transition, strip it away.
+so we do this to leave a room of error of static buzz and static breaks. 
+
+remember then we need to perform local & negation of the backgournd to get teh correct visualised constellation maps, and also there is some hyperparameter tuning which will be done test songs.. 
+
+after that we obtaint he indices where the frequencies and time indices of those basically coordinates and that marks the end of phase3. 
+
+
+PHase 4 : Combinatorial Hashing.. 
+
+Now we have a collection of peak coordinates: (time, frequency). But we can't just look up single peaks in a database. If our engine looks for a single peak at 1034 Hz, it will find millions of matches across thousands of songs. A single point isn't unique enough.
+
+To solve this, Shazam uses Combinatorial Hashing. Instead of indexing single dots, we link pairs of dots together.
+
+Now once we have obtained the constellatio maps, all we need to do is store them as hash.. now when we compare.. there may be audio translational invariance that a song may even start later than the original, so we use a smart tactic here, instead of storing absolute values, we store the relationship between the peaks that is the gap at which they occur. 
+
+and also we dont choose all pairs as it leads to enormous size of n^2. so we choose a star.. (anchor frequency ) and connect the next 5 - 10 peaks aournd it. 
+so we store three things achor frequency | target frequency | time gap / time dilation. 
+but we also store the anchor time. 

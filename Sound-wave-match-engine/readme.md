@@ -38,6 +38,7 @@ The application is engineered as a decoupled, multi-layer data pipeline that han
 ### 3. Dimensionality Reduction via Peak Picking (`src/fingerprint.py`)
 * **Unsupervised Feature Selection:** To isolate structural audio signatures from background hums and static, an unsupervised **2D Local Maxima Filter** (equivalent to a CNN Max-Pooling layer) scans the spectrogram.
 * **Constellation Map Generation:** Data density is drastically compressed ($>95\%$ reduction) by discarding low-energy noise, retaining only high-intensity coordinate points called a *Constellation Map*.
+![Constellation Map at the end of phase 3 for a sample song](image-1.png)
 
 ### 4. Combinatorial Hashing (`src/fingerprint.py`)
 * **Time-Shift Invariance:** To ensure a query clip can match a song regardless of its start timestamp, peaks are coupled into anchors and target zones.

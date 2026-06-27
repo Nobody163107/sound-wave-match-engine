@@ -9,4 +9,7 @@ CHANNELS = 1 # we dont need spatial information so mono audio is self-sufficient
 FFT_WINDOW_SIZE = 4096 # Size of the window which is going to slide
 HOP_SIZE = 1024 # the distance each window slides.. with time. 
 
+# Phase -3 Maxpooling
+NEIGHBOURHOOD_SIZE = 15
+
 
