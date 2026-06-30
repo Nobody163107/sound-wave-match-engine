@@ -11,5 +11,11 @@ HOP_SIZE = 1024 # the distance each window slides.. with time.
 
 # Phase -3 Maxpooling
 NEIGHBOURHOOD_SIZE = 15
+MIN_AMPLITUDE = -60
+
+# PHase -4 -> Combinatorial Hashing
+FAN_OUT = 5
+MIN_DELTA_TIME = 1 # the starintg index. 
+MAX_DELTA_TIME = 10
 
 

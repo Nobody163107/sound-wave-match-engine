@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.ndimage as ndimage
 import matplotlib.pyplot as plt
-from src.config import NEIGHBOURHOOD_SIZE
-
+from src.config import NEIGHBOURHOOD_SIZE, MIN_DELTA_TIME, MAX_DELTA_TIME, FAN_OUT
+import hashlib
 
 
 def get_2d_peaks(spect_db, min_ampl = -50): 
@@ -28,6 +28,52 @@ def get_2d_peaks(spect_db, min_ampl = -50):
     
     return freq_ind, time_ind
 
+
+def generate_hash(times, freqs, time_ind, freq_ind): 
+    """
+    This function obtains the peaks we got and pairs them into anchor frequency and target frequency and then hashes them. 
+    
+    """
+    hashes = []# to store the hashes. 
+    
+    num_peaks = len(time_ind) # total number of peaks contesting for being an anchor. 
+    
+    for i in range(num_peaks): 
+        anchor_idx = time_ind[i] # gives the index of the anchor
+        anchor_freq = freqs[freq_ind[i]]
+        actual_tim = times[anchor_idx]
+        
+        pairs_form = 0
+        for j in range(i + 1, num_peaks): 
+            target_time_idx = time_ind[j]
+            target_freq = freqs[freq_ind[j]]
+            
+            delta_t_idx = target_time_idx - anchor_idx
+
+
+            # if this conditino satisfies then we can take that time, we dont want too close peaks nor too far peaks
+            if MIN_DELTA_TIME <= delta_t_idx  <= MAX_DELTA_TIME:
+                actual_delta_t = times[target_time_idx] - actual_tim
+                
+                hash_str = f"{int(anchor_freq)}|{int(target_freq)}|{actual_delta_t:.3f}"
+                
+                hashing = hashlib.sha1(hash_str.encode("utf-8")).hexdigest()[:20] # store only 20 characters which is enough for 80 bits
+                
+                hashes.append((hashing, actual_tim))
+                
+                pairs_form += 1
+                
+                if(pairs_form >= FAN_OUT): break
+                
+                
+            elif delta_t_idx > MAX_DELTA_TIME:
+                break
+        
+    print("[Phase- 4] Successfully Generated Unique hash values for the constellation maps. ")
+    return hashes
+    
+
+
 def visualize_constell(times, freqs, time_ind, freq_ind, track_name): 
     """
     Helps visualise the sparse constellation maps. 
@@ -46,6 +92,7 @@ def visualize_constell(times, freqs, time_ind, freq_ind, track_name):
     
 
 
+
 if __name__ == "__main__": 
     from src.preprocess import standardize_audio
     from src.spectrogram import create_spectrogram
@@ -58,8 +105,13 @@ if __name__ == "__main__":
         freqs, times, spect = create_spectrogram(audio)
         freq_i, time_i = get_2d_peaks(spect)
         
-        visualize_constell(times, freqs, time_i, freq_i, os.path.basename(test_file))
+        # visualize_constell(times, freqs, time_i, freq_i, os.path.basename(test_file))
         
+        hashes = generate_hash(times, freqs, time_i, freq_i)
+        
+        print("Displaying the hash keys for the peaks: (hashkey -> time_offset)")
+        for key, off in hashes[:10]: 
+            print(f"THe hash value : {key} has a time offset {off}")
         
     
     

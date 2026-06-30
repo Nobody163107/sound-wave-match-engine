@@ -74,3 +74,89 @@ soundwave-matching-engine/
 │
 ├── requirements.txt         # Project environment dependencies
 └── README.md                # System documentation
+
+## Full engine Architecture: 
+               SOUNDWAVE ENGINE
+──────────────────────────────────────────────
+
+Phase 1
+Audio Standardization
+────────────────────
+MP3
+↓
+Mono
+↓
+Resample (22.05 kHz)
+↓
+Normalize
+↓
+NumPy Array
+
+──────────────────────────────────────────────
+
+Phase 2
+Time → Frequency Transformation
+───────────────────────────────
+Waveform
+↓
+STFT
+↓
+Hamming Window
+↓
+Spectrogram (dB)
+
+──────────────────────────────────────────────
+
+Phase 3
+Feature Extraction
+──────────────────
+Spectrogram
+↓
+Maximum Filter
+↓
+Local Maxima
+↓
+Background Removal
+↓
+Constellation Map
+
+──────────────────────────────────────────────
+
+Phase 4
+Fingerprint Generation
+──────────────────────
+Constellation Map
+↓
+Choose Anchor
+↓
+Choose Target Zone
+↓
+Pair Anchor with Targets
+↓
+Generate Fingerprint Tuples
+
+(anchor_freq,
+ target_freq,
+ Δt)
+
+↓
+Hash Fingerprints
+
+──────────────────────────────────────────────
+
+Phase 5
+Search Engine
+─────────────
+Store Hashes
+↓
+Index Database
+↓
+Query Audio
+↓
+Generate Query Hashes
+↓
+Lookup
+↓
+Voting
+↓
+Best Match

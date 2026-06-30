@@ -89,7 +89,7 @@ remember then we need to perform local & negation of the backgournd to get teh c
 after that we obtaint he indices where the frequencies and time indices of those basically coordinates and that marks the end of phase3. 
 
 
-PHase 4 : Combinatorial Hashing.. 
+ℙℍ𝕒𝕤𝕖 𝟜 : ℂ𝕠𝕞𝕓𝕚𝕟𝕒𝕥𝕠𝕣𝕚𝕒𝕝 ℍ𝕒𝕤𝕙𝕚𝕟𝕘.. 
 
 Now we have a collection of peak coordinates: (time, frequency). But we can't just look up single peaks in a database. If our engine looks for a single peak at 1034 Hz, it will find millions of matches across thousands of songs. A single point isn't unique enough.
 
@@ -100,3 +100,35 @@ Now once we have obtained the constellatio maps, all we need to do is store them
 and also we dont choose all pairs as it leads to enormous size of n^2. so we choose a star.. (anchor frequency ) and connect the next 5 - 10 peaks aournd it. 
 so we store three things achor frequency | target frequency | time gap / time dilation. 
 but we also store the anchor time. 
+
+so that star is the anchor frequency and we define a target zone of some songs around it.. and we only store those songs in our anchor frequency with time values.. 
+
+we first convert the string to hash string.. then encode it because hsahlib handles the bytes and bits. .then what we store in the hash is the hash value and the time offset that is the time at which this anchor frequency occurs.. we will learn why in PHase 5. 
+
+
+Phase 5 : Storing and database management. 
+
+So here is the reason why store the anchor time.. what we do is once we have the stored anchor times. 
+
+we now have the query times.. now we record the hash of the query time.. say we started the song after 20s than the original. missing 20 s. now what we get we hash 1 at 20.0, 2 at 20.5, we subtract them original hash we get -30, -30,.. so same offset all hashes agree.. hence that is the correct song.. 
+now if we subtract teh database time and query time we get teh offset.. that is from which posi did the song get started ahead or behind. 
+
+SQLlite is like a database on the disk, we just simply open the file.db and access it .. thats iut. 
+
+so 5 concepts:
+1. Database: IN our program when we create dictioinary, it runs on RAM and disappears when the program returns.. databse stays on the disk and helps us access anytime.. we can store millions of songs  without it eating up our RAM.
+2. Why sqllite: Coz it is literally one file fingerprint.db, it gets accessed as sqllite.connet()
+3. Table: you know just like excel: but we create two tables here: 
+1. song details: id, name and artist.. 
+2. song id and theirs hashes
+
+here song id is called a foreign key as it relates two tables instead of writing the song details again and again we give it an identification like roll number.. then the first table acts as a registry. 
+
+THe pragma foreign key checks if that key acutally exists or not.. is just a safety / sanity check. 
+
+this is also caleld referential integrity and prevents the orphan fingerprints from existing in the database. 
+
+we also use cascade deletion, it means if the song is deleted, delete all the songs referencing it. 
+
+cursor is like a mediator just like mysql language, cursor creats queries and talks to the database. 
+
