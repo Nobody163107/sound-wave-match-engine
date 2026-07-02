@@ -96,11 +96,16 @@ def visualize_constell(times, freqs, time_ind, freq_ind, track_name):
 if __name__ == "__main__": 
     from src.preprocess import standardize_audio
     from src.spectrogram import create_spectrogram
+    from src.database import *
     import os
     
     test_file = "/mnt/c/Users/Praneeth Tadi/Documents/Coding/Machine Learning/ML Projects/Sound-wave-match-engine/data/raw/sample-20s.mp3"
     
     try: 
+        # Initialise the databse: 
+        init_db()
+        
+        # getting the signal and creating the hashes. 
         audio, sr = standardize_audio(test_file)
         freqs, times, spect = create_spectrogram(audio)
         freq_i, time_i = get_2d_peaks(spect)
@@ -109,11 +114,15 @@ if __name__ == "__main__":
         
         hashes = generate_hash(times, freqs, time_i, freq_i)
         
-        print("Displaying the hash keys for the peaks: (hashkey -> time_offset)")
-        for key, off in hashes[:10]: 
-            print(f"THe hash value : {key} has a time offset {off}")
+        # structuring the data for insertion
         
-    
+        song_title = os.path.splitext(os.path.basename(test_file))[0]
+        
+        print("Connecting to the Database: ")
+        song_id = store_song_fingerprints(title=song_title, arist="Test artist, Mango", hashes=hashes, file_path=test_file)
+        
+        print(f"Successfully added the song to database with a reference id: {song_id}")
+
     
     except Exception as e: 
         print(f"Error: {e}")

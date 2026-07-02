@@ -132,3 +132,18 @@ we also use cascade deletion, it means if the song is deleted, delete all the so
 
 cursor is like a mediator just like mysql language, cursor creats queries and talks to the database. 
 
+now after storing, we need fast searching for that we use B-tree, unlike a binary tgree which stores one key per node, B-tree stores multiple keys at every node. reducing vast complexity and establishes its suitability to disks. \
+
+we index the hash here to search the song in the database.
+
+cursor.execute(
+    "CREATE INDEX IF NOT EXISTS idx_hash ON fingerprints(hash);"
+)
+this line basicalyl tells to build the B-tree on the hashes for fast lookup. 
+one more thing we implement is atomic transaction which states that if any song fails in loading fingerpirnt, remove the entire song.. bvecause half info is worse than no info. 
+
+Phase-6 : Recognition: 
+Once we have eveyrthing ready, we process the query song into the preprocess layer. then what we find is not number of hashes but the list of hashes that makes more sense, if any one of the matches has more offsets same.. then that song wins.
+
+SO we first convert the query music into hashes by processing thro the same pipeline. then we use the default dict and for each song we store the offset (database - query). then by majority voting, we get the song which actually mathces. 
+
