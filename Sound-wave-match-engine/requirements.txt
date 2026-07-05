@@ -1,7 +1,9 @@
-numpy 
-scipy 
-matplotlib 
-librosa 
-fastapi 
-uvicorn 
-streamlit
+fastapi
+uvicorn
+numpy
+scipy
+matplotlib
+librosa
+soundfile
+scikit-learn
+python-multipart

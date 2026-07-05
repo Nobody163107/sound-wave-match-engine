@@ -1,21 +1,20 @@
-# this file consists all of the global parameters we apply to any of the audio files ingested into the pipeline. 
+"""Global configuration values used throughout the audio fingerprinting pipeline."""
 
+# Phase 1: audio loading and normalization
+TARGET_SAMPLING_RATE = 22050
+CHANNELS = 1
 
-# PHASE -1 parameters.
-TARGET_SAMPLING_RATE = 22050 # according to the nquiest theorem this is enougth to properly process audio files without losing much information
-CHANNELS = 1 # we dont need spatial information so mono audio is self-sufficient. 
+# Phase 2: spectrogram generation
+FFT_WINDOW_SIZE = 4096
+HOP_SIZE = 1024
 
-# PHASE -2 parameters. 
-FFT_WINDOW_SIZE = 4096 # Size of the window which is going to slide
-HOP_SIZE = 1024 # the distance each window slides.. with time. 
-
-# Phase -3 Maxpooling
+# Phase 3: peak detection and suppression
 NEIGHBOURHOOD_SIZE = 15
 MIN_AMPLITUDE = -60
 
-# PHase -4 -> Combinatorial Hashing
+# Phase 4: combinatorial hashing
 FAN_OUT = 5
-MIN_DELTA_TIME = 1 # the starintg index. 
+MIN_DELTA_TIME = 1
 MAX_DELTA_TIME = 10
 
 

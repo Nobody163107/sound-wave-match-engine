@@ -147,3 +147,15 @@ Once we have eveyrthing ready, we process the query song into the preprocess lay
 
 SO we first convert the query music into hashes by processing thro the same pipeline. then we use the default dict and for each song we store the offset (database - query). then by majority voting, we get the song which actually mathces. 
 
+so the the find_matches.. takes the processed queries and runs thro the database and returns a list of song_id and the time offset. 
+
+Now we use the get_score() to get teh son along with the number of votes which agree with each other. as we deal with floating point offsets. we perform quantization or bucket the numbers to the nearest value.. the bin used is 0.5 
+
+Phase 7: Orchestration Layer using CLI: 
+so instead of developers testing by changing filepaths, we provide the interface to pass arguments in the command line while running the files hence cli hence orchestration layer. 
+added teh group mutually exclusive arguements and added identify and add to it. ran it. got some bug.. apparently the time indices were not in chronological order. 
+
+
+DOCKER:
+RUN -> image build
+CMD -> during container init. 
